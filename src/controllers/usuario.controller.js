@@ -173,7 +173,7 @@ function encontrarEmpresas(req, res) {
     Usuario.find({rol:"Empresa"}, (err,usuariosEncontrados) => {
         if(usuariosEncontrados.length==0) return res.status(200).send({mensaje:"no cuenta con empresas"})
 
-        return res.status(200).send({mensaje:usuariosEncontrados})
+        return res.status(200).send({empresas:usuariosEncontrados})
     })
 }
 
