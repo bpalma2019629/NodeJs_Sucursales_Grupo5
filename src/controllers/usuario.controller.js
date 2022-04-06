@@ -50,22 +50,16 @@ function Registrar(req, res) {
 
             usuarioModel.save((err, usuarioGuardado) => {
               if (err)
-                return res
-                  .status(500)
-                  .send({ mensaje: "Error en la peticion" });
+                return res.status(500).send({ mensaje: "Error en la peticion" });
               if (!usuarioGuardado)
-                return res
-                  .status(500)
-                  .send({ mensaje: "Error al agregar el Usuario" });
+                return res.status(500).send({ mensaje: "Error al agregar el Usuario" });
 
               return res.status(200).send({ usuario: usuarioGuardado });
             });
           }
         );
       } else {
-        return res
-          .status(500)
-          .send({ mensaje: "Este usuario, ya  se encuentra utilizado" });
+        return res.status(500).send({ mensaje: "Este usuario, ya  se encuentra utilizado" });
       }
     });
   }
@@ -82,24 +76,18 @@ function Login(req, res) {
         (err, verificacionPassword) => {
           if (verificacionPassword) {
             if (parametros.obtenerToken === "true") {
-              return res
-                .status(200)
-                .send({ token: jwt.crearToken(usuarioEncontrado) });
+              return res.status(200).send({ token: jwt.crearToken(usuarioEncontrado) });
             } else {
               usuarioEncontrado.password = undefined;
               return res.status(200).send({ usuario: usuarioEncontrado });
             }
           } else {
-            return res
-              .status(500)
-              .send({ mensaje: "Las contraseñas no coinciden" });
+            return res.status(500).send({ mensaje: "Las contraseñas no coinciden" });
           }
         }
       );
     } else {
-      return res
-        .status(500)
-        .send({ mensaje: "Error, el usuario no se encuentra registrado." });
+      return res.status(500).send({ mensaje: "Error, el usuario no se encuentra registrado." });
     }
   });
 }
@@ -113,15 +101,11 @@ function EditarUsuario(req, res) {
         idEmpresa = req.user.sub
     }else if(req.user.rol == 'Admin'){
 
-        if(req.params.idEmpresa==null){
-            return res.status(500)
-                    .send({ mensaje: 'debe enviar el id de la empresa' });
-        }
+      if(req.params.idEmpresa==null)
+      return res.status(500).send({ mensaje: 'debe enviar el id de la empresa' });
 
-        if(req.params.idEmpresa == req.user.sub){
-            return res.status(500)
-                    .send({ mensaje: 'error, no puede editar el admin' });
-        }
+      if(req.params.idEmpresa == req.user.sub)
+      return res.status(500).send({ mensaje: 'error, no puede editar el admin' });
         
      idEmpresa = req.params.idEmpresa;
     }
@@ -129,52 +113,51 @@ function EditarUsuario(req, res) {
     parametros.rol=undefined;
 
     Usuario.findByIdAndUpdate(idEmpresa, parametros, {new : true},
-        (err, usuarioActualizado)=>{
-            if(err) return res.status(500)
-                .send({ mensaje: 'Error en la peticion' });
-            if(!usuarioActualizado) return res.status(500)
-                .send({ mensaje: 'Error al editar el Usuario'});
-            return res.status(200).send({usuario : usuarioActualizado})
-        })
+      (err, usuarioActualizado)=>{
+        if(err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+
+        if(!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al editar el Usuario'});
+        
+        return res.status(200).send({usuario : usuarioActualizado})
+      }
+    )
 }
 
 function EliminarUsuario(req, res){
-    let idEmpresa
+  let idEmpresa
 
-    if(req.user.rol == 'Empresa'){
-        idEmpresa = req.user.sub
-    }else if(req.user.rol == 'Admin'){
+  if(req.user.rol == 'Empresa'){
+    idEmpresa = req.user.sub
+  }else if(req.user.rol == 'Admin'){
 
-        if(req.params.idEmpresa==null){
-            return res.status(500)
-                    .send({ mensaje: 'debe enviar el id de la empresa' });
-        }
-        
-        if(req.params.idEmpresa == req.user.sub){
-            return res.status(500)
-                    .send({ mensaje: 'error, no puede eliminar el admin' });
-        }
-
-     idEmpresa = req.params.idEmpresa;
+    if(req.params.idEmpresa==null){
+      return res.status(500).send({ mensaje: 'debe enviar el id de la empresa' });
+    }
+    
+    if(req.params.idEmpresa == req.user.sub){
+      return res.status(500).send({ mensaje: 'error, no puede eliminar el admin' });
     }
 
-    Usuario.findByIdAndDelete(idEmpresa,
-        (err, usuarioActualizado)=>{
-            if(err) return res.status(500)
-                .send({ mensaje: 'Error en la peticion' });
-            if(!usuarioActualizado) return res.status(500)
-                .send({ mensaje: 'Error al eliminar el Usuario'});
-            return res.status(200).send({usuario : usuarioActualizado})
-        })
+    idEmpresa = req.params.idEmpresa;
+  }
+
+  Usuario.findByIdAndDelete(idEmpresa,
+    (err, usuarioActualizado)=>{
+      if(err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+
+      if(!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al eliminar el Usuario'});
+      
+      return res.status(200).send({usuario : usuarioActualizado})
+    })
 
 }
 
 function encontrarEmpresas(req, res) {
-    Usuario.find({rol:"Empresa"}, (err,usuariosEncontrados) => {
-        if(usuariosEncontrados.length==0) return res.status(200).send({mensaje:"no cuenta con empresas"})
+  Usuario.find({rol:"Empresa"}, (err,usuariosEncontrados) => {
+    if(usuariosEncontrados.length==0) return res.status(200).send({mensaje:"no cuenta con empresas"})
 
-        return res.status(200).send({empresas:usuariosEncontrados})
-    })
+    return res.status(200).send({empresas:usuariosEncontrados})
+  })
 }
 
 module.exports = {
