@@ -9,9 +9,10 @@ function AgregarSucursal(req, res){
     if(req.user.rol == 'Admin')
     return res.status(404).send ({mensaje: 'El administrador no puede agregarle sucursales a las empresas'});
 
-    if(parametros.nombreSucursal && parametros.direccionSucursal){
+    if(parametros.nombreSucursal && parametros.direccionSucursal && parametros.municipio){
         sucursalModel.nombreSucursal = parametros.nombreSucursal;
         sucursalModel.direccionSucursal = parametros.direccionSucursal;
+        sucursalModel.municipio = parametros.municipio;
         sucursalModel.idEmpresa = req.user.sub;
 
         Sucursales.find({nombreSucursal: parametros.nombreSucursal}, (err, sucursalEncontrada)=>{
@@ -73,14 +74,16 @@ function EliminarSucursal (req, res){
 
 function ObtenerSucursalesPorEmpresa(req, res){
 
-    Sucursales.find({ idEmpresa : req.user.sub }, (err, sucursalesEncontradas) => {
+    var idSucur = req.params.idSucursal;
+
+    Sucursales.find({ idEmpresa : idSucur }, (err, sucursalesEncontradas) => {
         if(err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if(!sucursalesEncontradas) return res.status(500).send({ mensaje: "Error al obtener las sucursales"});
 
         if(sucursalesEncontradas==0)
         return res.status(404).send({mensaje: 'No se encontraron sucursales'});
 
-        return res.status(200).send({ empleados: sucursalesEncontradas });
+        return res.status(200).send({ sucursales: sucursalesEncontradas });
     })
 }
 

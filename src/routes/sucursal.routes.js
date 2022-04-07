@@ -7,6 +7,6 @@ const api = express.Router();
 api.post('/registrarSucursal', md_autenticacion.Auth, sucursalControlador.AgregarSucursal);
 api.put('/editarSucursal/:idSucursal', md_autenticacion.Auth, sucursalControlador.EditarSucursal);
 api.delete('/eliminarSucursal/:idSucursal', md_autenticacion.Auth, sucursalControlador.EliminarSucursal);
-api.get('/verSucursalesEmpresa', md_autenticacion.Auth, sucursalControlador.ObtenerSucursalesPorEmpresa);
+api.get('/verSucursalesEmpresa/:idSucursal', sucursalControlador.ObtenerSucursalesPorEmpresa);
 
 module.exports = api;

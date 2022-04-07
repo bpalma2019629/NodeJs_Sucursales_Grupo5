@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const SucursalSchema = Schema({
     nombreSucursal: String,
     direccionSucursal: String,
+    municipio: String,
     idEmpresa: {type: Schema.Types.ObjectId, ref: 'empresa'},
 });
 

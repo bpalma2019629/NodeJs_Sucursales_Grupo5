@@ -65,6 +65,49 @@ function Registrar(req, res) {
   }
 }
 
+function agregarEmpresa(req, res) {
+  var parametros = req.body;
+  var usuarioModel = new Usuario();
+
+  if(req.user.sub!='Admin') return res.status(500).send({mensaje: 'No eres un Administrador'})
+  if (
+    parametros.nombreEmpresa &&
+    parametros.usuario &&
+    parametros.password &&
+    parametros.tipo
+  ) {
+    usuarioModel.nombreEmpresa = parametros.nombreEmpresa;
+    usuarioModel.usuario = parametros.usuario;
+    usuarioModel.password = parametros.password;
+    usuarioModel.tipo = parametros.tipo;
+    usuarioModel.rol = "Empresa";
+
+    Usuario.find({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
+      if (usuarioEncontrado.length == 0) {
+        bcrypt.hash(
+          parametros.password,
+          null,
+          null,
+          (err, passwordEncriptada) => {
+            usuarioModel.password = passwordEncriptada;
+
+            usuarioModel.save((err, usuarioGuardado) => {
+              if (err)
+                return res.status(500).send({ mensaje: "Error en la peticion" });
+              if (!usuarioGuardado)
+                return res.status(500).send({ mensaje: "Error al agregar el Usuario" });
+
+              return res.status(200).send({ usuario: usuarioGuardado });
+            });
+          }
+        );
+      } else {
+        return res.status(500).send({ mensaje: "Este usuario, ya  se encuentra utilizado" });
+      }
+    });
+  }
+}
+
 function Login(req, res) {
   var parametros = req.body;
   Usuario.findOne({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
@@ -162,6 +205,7 @@ function encontrarEmpresas(req, res) {
 
 module.exports = {
   Registrar,
+  agregarEmpresa,
   Login,
   EditarUsuario,
   EliminarUsuario,
