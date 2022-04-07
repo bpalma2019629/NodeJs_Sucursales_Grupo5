@@ -89,9 +89,6 @@ function ObtenerSucursalesPorEmpresa(req, res){
         if(err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if(!sucursalesEncontradas) return res.status(500).send({ mensaje: "Error al obtener las sucursales"});
 
-        if(sucursalesEncontradas==0)
-        return res.status(404).send({mensaje: 'No se encontraron sucursales'});
-
         return res.status(200).send({ sucursales: sucursalesEncontradas });
     })
 }
