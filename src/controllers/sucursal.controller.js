@@ -73,8 +73,17 @@ function EliminarSucursal (req, res){
 
 
 function ObtenerSucursalesPorEmpresa(req, res){
-
-    var idSucur = req.params.idSucursal;
+    var idSucur
+    if(req.user.rol == 'Empresa'){
+        idSucur = req.user.sub
+      }else if(req.user.rol == 'Admin'){
+    
+        if(req.params.idSucursal==null){
+          return res.status(500).send({ mensaje: 'debe enviar el id de la empresa' });
+        }
+    
+        idSucur = req.params.idSucursal;
+      }
 
     Sucursales.find({ idEmpresa : idSucur }, (err, sucursalesEncontradas) => {
         if(err) return res.status(500).send({ mensaje: "Error en la peticion" });
