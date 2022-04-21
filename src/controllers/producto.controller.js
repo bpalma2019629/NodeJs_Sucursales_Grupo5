@@ -47,7 +47,7 @@ function EditarProducto(req, res) {
     Producto.find({ nombreProducto: parametros.nombreProducto }, (err, productoEncontrado) => {
         if (productoEncontrado.length == 0) {
 
-            Producto.findOneAndUpdate({ _id: idProd, idEmpresa: req.user.sub }, parametros, { new: true }, (err, productoActualizado) => {
+            Producto.findOneAndUpdate({ _id: idProd, idEmpresa:req.user.sub }, parametros, { new: true }, (err, productoActualizado) => {
                 if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
                 if (!productoActualizado) return res.status(500).send({ mensaje: 'Ocurrio un error o no tiene permitido modificar el producto de esta empresa' });
 
