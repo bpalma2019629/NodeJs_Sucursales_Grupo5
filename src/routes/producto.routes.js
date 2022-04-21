@@ -8,6 +8,7 @@ api.post('/agregarProducto', md_autenticacion.Auth, productoControlador.AgregarP
 api.put('/editarProducto/:idProducto', md_autenticacion.Auth, productoControlador.EditarProducto);
 api.delete('/eliminarProducto/:idProducto', md_autenticacion.Auth, productoControlador.EliminarProducto);
 api.get('/verProductosEmpresa', md_autenticacion.Auth, productoControlador.ObtenerProductosPorEmpresa);
+api.get('/verProductosEmpresa/:idProducto', productoControlador.ObtenerProductoId);
 api.put('/stockProducto/:idProducto', md_autenticacion.Auth, productoControlador.StockProducto);
 
 module.exports = api;

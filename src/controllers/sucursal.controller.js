@@ -51,7 +51,13 @@ function EditarSucursal(req, res){
                 return res.status(200).send({sucursal: sucursalActualizada});
             })
         }else{
-            return res.status(500).send({mensaje:'Esta sucursal ya existe, intente con otro nombre'});
+            parametros.nombreSucursal=sucursalEncontrada.nombreSucursal;
+            Sucursales.findOneAndUpdate({_id:idSucur, idEmpresa: req.user.sub}, parametros, {new: true} ,(err, sucursalActualizada) => {
+                if (err) return res.status(500).send({mensaje: 'Error en la peticion'});
+                if(!sucursalActualizada) return res.status(404).send({mensaje: "Ocurrio un error o no tiene permitido modificar la sucursal de esta empresa."});
+
+                return res.status(200).send({sucursal: sucursalActualizada});
+            })
         }
     })
 }
@@ -93,10 +99,22 @@ function ObtenerSucursalesPorEmpresa(req, res){
     })
 }
 
+function ObtenerSucursalId(req, res){
+    var idSucu = req.params.idSucursal;
+
+    Sucursales.findById(idSucu, (err, sucursalEncontrada) => {
+        if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+        if (!sucursalEncontrada) return res.status(404).send( { mensaje: 'Error al obtener los datos' });
+
+        return res.status(200).send({ sucursales: sucursalEncontrada });
+    })
+}
+
 
 module.exports = {
     AgregarSucursal,
     EditarSucursal,
     EliminarSucursal,
-    ObtenerSucursalesPorEmpresa
+    ObtenerSucursalesPorEmpresa,
+    ObtenerSucursalId
 }

@@ -55,7 +55,13 @@ function EditarProducto(req, res) {
             })
 
         } else {
-            return res.status(500).send({ mensaje: 'Este nombre de producto ya existe, intente con otro' });
+            parametros.nombreProducto=productoEncontrado.nombreProducto;
+            Producto.findOneAndUpdate({ _id: idProd, idEmpresa: req.user.sub }, parametros, { new: true }, (err, productoActualizado) => {
+                if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+                if (!productoActualizado) return res.status(500).send({ mensaje: 'Ocurrio un error o no tiene permitido modificar el producto de esta empresa' });
+
+                return res.status(200).send({ producto: productoActualizado })
+            })
         }
     })
 
@@ -85,6 +91,17 @@ function ObtenerProductosPorEmpresa(req, res) {
             return res.status(200).send({ productos: productosEncontrados });
         })
     }
+}
+
+function ObtenerProductoId(req, res){
+    var idProd = req.params.idProducto;
+
+    Producto.findById(idProd, (err, productoEncontrado) => {
+        if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+        if (!productoEncontrado) return res.status(404).send( { mensaje: 'Error al obtener los datos' });
+
+        return res.status(200).send({ productos: productoEncontrado });
+    })
 }
 
 function StockProducto(req, res) {
@@ -127,5 +144,6 @@ module.exports = {
     EditarProducto,
     EliminarProducto,
     ObtenerProductosPorEmpresa,
+    ObtenerProductoId,
     StockProducto
 }
