@@ -52,6 +52,17 @@ function enviarProducto(req, res) {
     }
 }
 
+function ObtenerProductoSucursalId(req, res){
+    var idProd = req.params.idProducto;
+
+    ProductoS.findById(idProd, (err, productoEncontrado) => {
+        if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+        if (!productoEncontrado) return res.status(404).send( { mensaje: 'Error al obtener los datos' });
+
+        return res.status(200).send({ productos: productoEncontrado });
+    })
+}
+
 function verProductosSucursales(req, res) {
     var idSuc = req.params.idSucursal;
     if (req.user.rol == 'Empresa') {
@@ -100,5 +111,6 @@ module.exports = {
     enviarProducto,
     verProductosSucursales,
     gestionarProductosSucursales,
-    eliminarProductoSucursal
+    eliminarProductoSucursal,
+    ObtenerProductoSucursalId
 }
