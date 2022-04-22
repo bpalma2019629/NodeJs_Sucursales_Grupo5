@@ -203,6 +203,16 @@ function encontrarEmpresas(req, res) {
   })
 }
 
+function encontrarEmpresaId(req, res) {
+  var idEmpresa = req.params.id;
+      Usuario.findById(idEmpresa, (err, empresaEncontrada) => {
+          if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
+          if (!empresaEncontrada) return res.status(500).send({ mensaje: "Error al obtener la empresa" });
+
+          return res.status(200).send({ empresa: empresaEncontrada });
+      })
+}
+
 module.exports = {
   Registrar,
   agregarEmpresa,
@@ -210,5 +220,6 @@ module.exports = {
   EditarUsuario,
   EliminarUsuario,
   CreacionAdmin,
-  encontrarEmpresas
+  encontrarEmpresas,
+  encontrarEmpresaId
 };
