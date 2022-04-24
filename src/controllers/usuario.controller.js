@@ -1,4 +1,7 @@
 const Usuario = require("../models/usuario.model");
+const Producto = require('../models/producto.model');
+const ProductoS = require('../models/productoSucursal.model');
+const Sucursales = require('../models/sucursal.model');
 
 const bcrypt = require("bcrypt-nodejs");
 const jwt = require("../services/jwt");
@@ -69,7 +72,7 @@ function agregarEmpresa(req, res) {
   var parametros = req.body;
   var usuarioModel = new Usuario();
 
-  if(req.user.sub!='Admin') return res.status(500).send({mensaje: 'No eres un Administrador'})
+  if (req.user.sub != 'Admin') return res.status(500).send({ mensaje: 'No eres un Administrador' })
   if (
     parametros.nombreEmpresa &&
     parametros.usuario &&
@@ -136,71 +139,92 @@ function Login(req, res) {
 }
 
 function EditarUsuario(req, res) {
-    var parametros = req.body;    
+  var parametros = req.body;
 
-    let idEmpresa
-
-    if(req.user.rol == 'Empresa'){
-        idEmpresa = req.user.sub
-    }else if(req.user.rol == 'Admin'){
-
-      if(req.params.idEmpresa==null)
-      return res.status(500).send({ mensaje: 'debe enviar el id de la empresa' });
-
-      if(req.params.idEmpresa == req.user.sub)
-      return res.status(500).send({ mensaje: 'error, no puede editar el admin' });
-        
-     idEmpresa = req.params.idEmpresa;
-    }
-
-    parametros.rol=undefined;
-
-    Usuario.findByIdAndUpdate(idEmpresa, parametros, {new : true},
-      (err, usuarioActualizado)=>{
-        if(err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-
-        if(!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al editar el Usuario'});
-        
-        return res.status(200).send({usuario : usuarioActualizado})
-      }
-    )
-}
-
-function EliminarUsuario(req, res){
   let idEmpresa
 
-  if(req.user.rol == 'Empresa'){
+  if (req.user.rol == 'Empresa') {
     idEmpresa = req.user.sub
-  }else if(req.user.rol == 'Admin'){
+  } else if (req.user.rol == 'Admin') {
 
-    if(req.params.idEmpresa==null){
+    if (req.params.idEmpresa == null)
+      return res.status(500).send({ mensaje: 'debe enviar el id de la empresa' });
+
+    if (req.params.idEmpresa == req.user.sub)
+      return res.status(500).send({ mensaje: 'error, no puede editar el admin' });
+
+    idEmpresa = req.params.idEmpresa;
+  }
+
+  parametros.rol = undefined;
+
+  Usuario.findByIdAndUpdate(idEmpresa, parametros, { new: true },
+    (err, usuarioActualizado) => {
+      if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+
+      if (!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al editar el Usuario' });
+
+      return res.status(200).send({ usuario: usuarioActualizado })
+    }
+  )
+}
+
+function EliminarUsuario(req, res) {
+  let idEmpresa
+
+  if (req.user.rol == 'Empresa') {
+    idEmpresa = req.user.sub
+  } else if (req.user.rol == 'Admin') {
+
+    if (req.params.idEmpresa == null) {
       return res.status(500).send({ mensaje: 'debe enviar el id de la empresa' });
     }
-    
-    if(req.params.idEmpresa == req.user.sub){
+
+    if (req.params.idEmpresa == req.user.sub) {
       return res.status(500).send({ mensaje: 'error, no puede eliminar el admin' });
     }
 
     idEmpresa = req.params.idEmpresa;
   }
 
-  Usuario.findByIdAndDelete(idEmpresa,
-    (err, usuarioActualizado)=>{
-      if(err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-
-      if(!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al eliminar el Usuario'});
-      
-      return res.status(200).send({usuario : usuarioActualizado})
+  Producto.deleteMany({ idEmpresa: idEmpresa }, (err, productoEliminado) => {
+    if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+    if (!productoEliminado) return res.status(500).send({ mensaje: 'Error al eliminar el Producto' });
+    Sucursales.find({ idEmpresa: idEmpresa }, (err, sucursalesEncontradas) => {
+      if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+      if (!sucursalesEncontradas) return res.status(500).send({ mensaje: 'Error al Encontrar las Sucursales' });
+      for (var i = 0; i < sucursalesEncontradas.length; i++) {
+        ProductoS.deleteMany({ idSucursal: sucursalesEncontradas[i]._id }, (err, productosSucursalesEliminados) => {
+          if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+          if (!productosSucursalesEliminados) return res.status(500).send({ mensaje: 'Error al eliminar los productos de las Sucursale' });
+        })
+      }
+      Sucursales.deleteMany({ idEmpresa: idEmpresa }, (err, sucursalEliminada) => {
+        if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+        if (!sucursalEliminada) return res.status(500).send({ mensaje: 'Error al eliminar los productos de las Sucursale' });
+        Usuario.findByIdAndDelete(idEmpresa,
+          (err, usuarioActualizado) => {
+            if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+            if (!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al eliminar el Usuario' });
+            return res.status(200).send({ usuario: usuarioActualizado })
+          })
+      })
     })
+  })
 
 }
 
 function encontrarEmpresas(req, res) {
-  Usuario.find({rol:"Empresa"}, (err,usuariosEncontrados) => {
-    if(usuariosEncontrados.length==0) return res.status(200).send({mensaje:"no cuenta con empresas"})
 
-    return res.status(200).send({empresas:usuariosEncontrados})
-  })
+  if(req.user.sub == 'Admin'){
+    Usuario.find({ rol: "Empresa" }, (err, usuariosEncontrados) => {
+      if (usuariosEncontrados.length == 0) return res.status(200).send({ mensaje: "no cuenta con empresas" })
+  
+      return res.status(200).send({ empresas: usuariosEncontrados })
+    })
+  }else{
+    return res.status(500).send({mensaje: 'No Esta autorizado para ver las empresas'})
+  }
 }
 
 module.exports = {

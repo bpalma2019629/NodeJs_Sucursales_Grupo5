@@ -1,4 +1,5 @@
 const Sucursales = require('../models/sucursal.model');
+const ProductoS = require('../models/productoSucursal.model');
 const bcrypt = require('bcrypt-nodejs')
 const jwt = require('../services/jwt');
 
@@ -15,7 +16,7 @@ function AgregarSucursal(req, res){
         sucursalModel.municipio = parametros.municipio;
         sucursalModel.idEmpresa = req.user.sub;
 
-        Sucursales.find({nombreSucursal: parametros.nombreSucursal}, (err, sucursalEncontrada)=>{
+        Sucursales.find({nombreSucursal: parametros.nombreSucursal, idEmpresa: req.user.sub}, (err, sucursalEncontrada)=>{
             if (sucursalEncontrada.length == 0){
 
                 sucursalModel.save((err, sucursalGuardada) =>{
@@ -69,11 +70,15 @@ function EliminarSucursal (req, res){
     if(req.user.rol == 'Admin')
     return res.status(404).send ({mensaje: 'El administrador no puede eliminar las sucursales de las empresas'});
 
-    Sucursales.findOneAndDelete({_id:idSucur, idEmpresa: req.user.sub},(err, sucursalEliminada) => {
-        if(err) return res.status(500).send ({mensaje: 'Error en la peticion'});
-        if (!sucursalEliminada) return res.status(404).send ({mensaje: 'Ocurrio un error o intento eliminar una sucursal que no le pertenece'});
-
-        return res.status(200).send({sucursal: sucursalEliminada});
+    ProductoS.deleteMany({idSucursal:idSucur},(err, productosEliminados)=>{
+        if(err) return res.status(500).send({mensaje: 'Error en la peticion'});
+        if(!productosEliminados) return res.status(404).send({mensaje: 'Error al eliminar los productos'});
+        Sucursales.findOneAndDelete({_id:idSucur, idEmpresa: req.user.sub},(err, sucursalEliminada) => {
+            if(err) return res.status(500).send ({mensaje: 'Error en la peticion'});
+            if (!sucursalEliminada) return res.status(404).send ({mensaje: 'Ocurrio un error o intento eliminar una sucursal que no le pertenece'});
+    
+            return res.status(200).send({sucursal: sucursalEliminada});
+        })
     })
 }
 

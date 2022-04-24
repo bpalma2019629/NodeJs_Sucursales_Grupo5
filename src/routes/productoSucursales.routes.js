@@ -5,8 +5,9 @@ const md_autenticacion = require('../middlewares/autenticacion');
 const api = express.Router();
 
 api.put('/enviarProductos/:idProducto', md_autenticacion.Auth, productoSControlador.enviarProducto);
-api.get('/ververProductosSucursales/:idSucursal', md_autenticacion.Auth, productoSControlador.verProductosSucursales);
+api.get('/verProductosSucursales/:idSucursal', md_autenticacion.Auth, productoSControlador.verProductosSucursales);
 api.put('/gestionarStock/:idProducto', md_autenticacion.Auth, productoSControlador.gestionarProductosSucursales);
 api.delete('/eliminarProductosSucursales/:idProducto', md_autenticacion.Auth, productoSControlador.eliminarProductoSucursal);
+api.put('/venta/:idProducto',md_autenticacion.Auth, productoSControlador.venta);
 
 module.exports = api;
