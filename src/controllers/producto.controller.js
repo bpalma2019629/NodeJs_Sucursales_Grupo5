@@ -18,7 +18,7 @@ function AgregarProducto(req, res) {
         productoModel.stock = parametros.stock;
         
         productoModel.idEmpresa = req.user.sub;
-        Producto.find({ idEmpresa: req.user.sub, nombreProducto:parametros.nombreProducto }, (err, productoEncontrado) => {
+        Producto.find({nombreProducto:parametros.nombreProducto, idEmpresa: req.user.sub }, (err, productoEncontrado) => {
                 if (productoEncontrado.length == 0) {
                     productoModel.save((err, productoGuardado) => {
                         if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });

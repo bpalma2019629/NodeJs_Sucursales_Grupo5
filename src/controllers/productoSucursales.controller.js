@@ -14,10 +14,11 @@ function enviarProducto(req, res) {
                 if (!productoEncontrado) return res.status(404).send({ mensaje: "Error al encontrar el producto" });
 
                 productoModel.nombreProducto = productoEncontrado.nombreProducto;
+                productoModel.cantidadVendida = 0;
                 if (parametros.stock <= 0) return res.status(500).send({ mensaje: 'El Stock no puede ser Negativo' })
                 if (parametros.stock > productoEncontrado.stock) return res.status(500).send({ mensaje: 'No cuenta con el Stock Necesario' })
                 productoModel.stock = parametros.stock;
-                Sucursales.find({ nombreSucursal: parametros.nombreSucursal }, (err, sucursalEncontrada) => {
+                Sucursales.find({ nombreSucursal: parametros.nombreSucursal, idEmpresa: req.user.sub }, (err, sucursalEncontrada) => {
                     if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
                     if (!sucursalEncontrada) return res.status(404).send({ mensaje: 'Error al cargar las sucursales' });
                     productoModel.idSucursal = sucursalEncontrada[0]._id;
@@ -52,12 +53,12 @@ function enviarProducto(req, res) {
     }
 }
 
-function ObtenerProductoSucursalId(req, res){
+function ObtenerProductoSucursalId(req, res) {
     var idProd = req.params.idProducto;
 
     ProductoS.findById(idProd, (err, productoEncontrado) => {
         if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-        if (!productoEncontrado) return res.status(404).send( { mensaje: 'Error al obtener los datos' });
+        if (!productoEncontrado) return res.status(404).send({ mensaje: 'Error al obtener los datos' });
 
         return res.status(200).send({ productos: productoEncontrado });
     })
@@ -81,8 +82,8 @@ function gestionarProductosSucursales(req, res) {
     if (req.user.rol == 'Empresa') {
         if (parametros.stock) {
             if (parametros.stock <= 0) return res.status(500).send({ mensaje: 'No puede ser Negativo' })
-            ProductoS.findById(idProd, (err, productoEncontrado)=>{
-                if(parametros.stock>productoEncontrado.stock) return res.status(500).send({ mensaje: 'No cuenta con esa cantidad en stock'});
+            ProductoS.findById(idProd, (err, productoEncontrado) => {
+                if (parametros.stock > productoEncontrado.stock) return res.status(500).send({ mensaje: 'No cuenta con esa cantidad en stock' });
                 ProductoS.findByIdAndUpdate(idProd, { $inc: { stock: parametros.stock * -1 } }, { new: true }, (err, stockSActualizado) => {
                     if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
                     if (!stockSActualizado) return res.status(400).send({ mensaje: "Error al gestionar el producto" });
@@ -105,6 +106,33 @@ function eliminarProductoSucursal(req, res) {
     }
 }
 
+function venta(req, res) {
+    var idProd = req.params.idProducto;
+    var parametros = req.body;
+    if (req.user.rol == 'Empresa') {
+        ProductoS.findById(idProd, (err, productoEncontrado) => {
+            if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
+            if (!productoEncontrado) return res.status(400).send({ mensaje: "Error al agregar el producto" });
+            if (parametros.cantidad <= 0) return res.status(404).send({ mensaje: 'Ingrese un valor valido' });
+            if (productoEncontrado.stock >= parametros.cantidad) {
+                ProductoS.findByIdAndUpdate(idProd, { cantidadVendida: parametros.cantidad }, { new: true }, (err, ventaActualizada) => {
+                    if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
+                    if (!ventaActualizada) return res.status(400).send({ mensaje: "Error al agregar el producto" });
+                    ProductoS.findByIdAndUpdate(idProd, { $inc: { stock: parametros.cantidad * -1 } }, { new: true }, (err, ventaEfectuada) => {
+                        if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
+                        if (!ventaEfectuada) return res.status(400).send({ mensaje: "Error al agregar el producto" });
+                        return res.status(200).send({ producto: ventaEfectuada });
+                    })
+                })
+            } else {
+                return res.status(500).send({ mensaje: "No cuenta con el stock suficiente" });
+            }
+        })
+    }
+
+}
+
+
 //exports
 
 module.exports = {
@@ -112,5 +140,6 @@ module.exports = {
     verProductosSucursales,
     gestionarProductosSucursales,
     eliminarProductoSucursal,
-    ObtenerProductoSucursalId
+    ObtenerProductoSucursalId,
+    venta
 }
