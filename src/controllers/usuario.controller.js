@@ -216,7 +216,7 @@ function EliminarUsuario(req, res) {
 
 function encontrarEmpresas(req, res) {
 
-  if(req.user.sub == 'Admin'){
+  if(req.user.rol == 'Admin'){
     Usuario.find({ rol: "Empresa" }, (err, usuariosEncontrados) => {
       if (usuariosEncontrados.length == 0) return res.status(200).send({ mensaje: "no cuenta con empresas" })
   
