@@ -8,6 +8,7 @@ api.put('/enviarProductos/:idProducto', md_autenticacion.Auth, productoSControla
 api.get('/verProductosSucursales/:idSucursal', md_autenticacion.Auth, productoSControlador.verProductosSucursales);
 api.put('/gestionarStock/:idProducto', md_autenticacion.Auth, productoSControlador.gestionarProductosSucursales);
 api.delete('/eliminarProductosSucursales/:idProducto', md_autenticacion.Auth, productoSControlador.eliminarProductoSucursal);
+api.get('/productoSucursalNombre/:nombre/:sucursal', md_autenticacion.Auth, productoSControlador.ObtenerProductoNombre);
 api.get('/verProductosSucuralesId/:idProducto', productoSControlador.ObtenerProductoId);
 api.put('/venta/:idProducto',md_autenticacion.Auth, productoSControlador.venta);
 

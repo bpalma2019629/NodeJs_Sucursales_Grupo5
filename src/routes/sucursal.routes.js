@@ -9,5 +9,6 @@ api.put('/editarSucursal/:idSucursal', md_autenticacion.Auth, sucursalControlado
 api.delete('/eliminarSucursal/:idSucursal?', md_autenticacion.Auth, sucursalControlador.EliminarSucursal);
 api.get('/verSucursalesEmpresa/:idSucursal?', md_autenticacion.Auth, sucursalControlador.ObtenerSucursalesPorEmpresa);
 api.get('/verSucursalesEmpresaId/:idSucursal', sucursalControlador.ObtenerSucursalId);
+api.get('/sucursalesNombre/:nombre',  md_autenticacion.Auth, sucursalControlador.ObtenerSucursalNombre);
 
 module.exports = api;

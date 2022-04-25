@@ -104,6 +104,18 @@ function ObtenerProductoId(req, res){
     })
 }
 
+function ObtenerProductoNombre(req, res){
+    var nombre = req.params.nombre;
+    var empresa = req.user.sub;
+
+    Producto.find({idEmpresa: empresa, nombreProducto:{ $regex: nombre, $options: 'i' } }, (err, productoEncontrado) => {
+        if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+        if (!productoEncontrado) return res.status(404).send( { mensaje: 'Error al obtener los datos' });
+
+        return res.status(200).send({ productos: productoEncontrado });
+    })
+}
+
 function StockProducto(req, res) {
     var productoId = req.params.idProducto;
     var parametros = req.body;
@@ -145,5 +157,6 @@ module.exports = {
     EliminarProducto,
     ObtenerProductosPorEmpresa,
     ObtenerProductoId,
-    StockProducto
+    StockProducto,
+    ObtenerProductoNombre
 }

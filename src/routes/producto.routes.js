@@ -9,6 +9,7 @@ api.put('/editarProducto/:idProducto', md_autenticacion.Auth, productoControlado
 api.delete('/eliminarProducto/:idProducto', md_autenticacion.Auth, productoControlador.EliminarProducto);
 api.get('/verProductosEmpresa', md_autenticacion.Auth, productoControlador.ObtenerProductosPorEmpresa);
 api.get('/verProductosEmpresa/:idProducto', productoControlador.ObtenerProductoId);
+api.get('/productoNombre/:nombre', md_autenticacion.Auth, productoControlador.ObtenerProductoNombre);
 api.put('/stockProducto/:idProducto', md_autenticacion.Auth, productoControlador.StockProducto);
 
 module.exports = api;

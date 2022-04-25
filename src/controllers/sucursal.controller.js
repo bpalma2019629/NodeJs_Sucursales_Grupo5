@@ -115,11 +115,25 @@ function ObtenerSucursalId(req, res){
     })
 }
 
+function ObtenerSucursalNombre(req, res){
+    var nombre = req.params.nombre;
+    var empresa = req.user.sub;
+
+
+    Sucursales.find({idEmpresa: empresa, nombreSucursal:{ $regex: nombre, $options: 'i' } }, (err, sucursalEncontrada) => {
+        if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+        if (!sucursalEncontrada) return res.status(404).send( { mensaje: 'Error al obtener los datos' });
+
+        return res.status(200).send({ sucursales: sucursalEncontrada });
+    })
+}
+
 
 module.exports = {
     AgregarSucursal,
     EditarSucursal,
     EliminarSucursal,
     ObtenerSucursalesPorEmpresa,
-    ObtenerSucursalId
+    ObtenerSucursalId,
+    ObtenerSucursalNombre
 }
