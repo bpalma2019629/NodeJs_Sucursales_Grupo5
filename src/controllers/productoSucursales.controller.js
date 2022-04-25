@@ -113,12 +113,12 @@ function venta(req, res) {
         ProductoS.findById(idProd, (err, productoEncontrado) => {
             if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
             if (!productoEncontrado) return res.status(400).send({ mensaje: "Error al agregar el producto" });
-            if (parametros.cantidad <= 0) return res.status(404).send({ mensaje: 'Ingrese un valor valido' });
-            if (productoEncontrado.stock >= parametros.cantidad) {
-                ProductoS.findByIdAndUpdate(idProd, { cantidadVendida: parametros.cantidad }, { new: true }, (err, ventaActualizada) => {
+            if (parametros.stock <= 0) return res.status(404).send({ mensaje: 'Ingrese un valor valido' });
+            if (productoEncontrado.stock >= parametros.stock) {
+                ProductoS.findByIdAndUpdate(idProd, { cantidadVendida: parametros.stock }, { new: true }, (err, ventaActualizada) => {
                     if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
                     if (!ventaActualizada) return res.status(400).send({ mensaje: "Error al agregar el producto" });
-                    ProductoS.findByIdAndUpdate(idProd, { $inc: { stock: parametros.cantidad * -1 } }, { new: true }, (err, ventaEfectuada) => {
+                    ProductoS.findByIdAndUpdate(idProd, { $inc: { stock: parametros.stock * -1 } }, { new: true }, (err, ventaEfectuada) => {
                         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
                         if (!ventaEfectuada) return res.status(400).send({ mensaje: "Error al agregar el producto" });
                         return res.status(200).send({ producto: ventaEfectuada });
@@ -132,6 +132,17 @@ function venta(req, res) {
 
 }
 
+function ObtenerProductoId(req, res){
+    var idProd = req.params.idProducto;
+
+    ProductoS.findById(idProd, (err, productoEncontrado) => {
+        if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+        if (!productoEncontrado) return res.status(404).send( { mensaje: 'Error al obtener los datos' });
+
+        return res.status(200).send({ productos: productoEncontrado });
+    })
+}
+
 
 //exports
 
@@ -141,5 +152,6 @@ module.exports = {
     gestionarProductosSucursales,
     eliminarProductoSucursal,
     ObtenerProductoSucursalId,
-    venta
+    venta,
+    ObtenerProductoId
 }

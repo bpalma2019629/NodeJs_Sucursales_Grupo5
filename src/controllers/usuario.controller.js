@@ -42,29 +42,35 @@ function Registrar(req, res) {
     usuarioModel.tipo = parametros.tipo;
     usuarioModel.rol = "Empresa";
 
-    Usuario.find({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
-      if (usuarioEncontrado.length == 0) {
-        bcrypt.hash(
-          parametros.password,
-          null,
-          null,
-          (err, passwordEncriptada) => {
-            usuarioModel.password = passwordEncriptada;
+    Usuario.find({ nombreEmpresa: parametros.nombreEmpresa }, (err, nombreEncontrado) => {
+      if (nombreEncontrado.length == 0) {
+        Usuario.find({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
+          if (usuarioEncontrado.length == 0) {
+            bcrypt.hash(
+              parametros.password,
+              null,
+              null,
+              (err, passwordEncriptada) => {
+                usuarioModel.password = passwordEncriptada;
 
-            usuarioModel.save((err, usuarioGuardado) => {
-              if (err)
-                return res.status(500).send({ mensaje: "Error en la peticion" });
-              if (!usuarioGuardado)
-                return res.status(500).send({ mensaje: "Error al agregar el Usuario" });
+                usuarioModel.save((err, usuarioGuardado) => {
+                  if (err)
+                    return res.status(500).send({ mensaje: "Error en la peticion" });
+                  if (!usuarioGuardado)
+                    return res.status(500).send({ mensaje: "Error al agregar el Usuario" });
 
-              return res.status(200).send({ usuario: usuarioGuardado });
-            });
+                  return res.status(200).send({ usuario: usuarioGuardado });
+                });
+              }
+            );
+          } else {
+            return res.status(500).send({ mensaje: "Este usuario, ya  se encuentra utilizado" });
           }
-        );
+        });
       } else {
-        return res.status(500).send({ mensaje: "Este usuario, ya  se encuentra utilizado" });
+        return res.status(500).send({ mensaje: "Este nombre ya se encuentra utilizado" })
       }
-    });
+    })
   }
 }
 
@@ -84,30 +90,35 @@ function agregarEmpresa(req, res) {
     usuarioModel.password = parametros.password;
     usuarioModel.tipo = parametros.tipo;
     usuarioModel.rol = "Empresa";
+    Usuario.find({ nombreEmpresa: parametros.nombreEmpresa }, (err, nombreEncontrado) => {
+      if (nombreEncontrado.length == 0) {
+        Usuario.find({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
+          if (usuarioEncontrado.length == 0) {
+            bcrypt.hash(
+              parametros.password,
+              null,
+              null,
+              (err, passwordEncriptada) => {
+                usuarioModel.password = passwordEncriptada;
 
-    Usuario.find({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
-      if (usuarioEncontrado.length == 0) {
-        bcrypt.hash(
-          parametros.password,
-          null,
-          null,
-          (err, passwordEncriptada) => {
-            usuarioModel.password = passwordEncriptada;
+                usuarioModel.save((err, usuarioGuardado) => {
+                  if (err)
+                    return res.status(500).send({ mensaje: "Error en la peticion" });
+                  if (!usuarioGuardado)
+                    return res.status(500).send({ mensaje: "Error al agregar el Usuario" });
 
-            usuarioModel.save((err, usuarioGuardado) => {
-              if (err)
-                return res.status(500).send({ mensaje: "Error en la peticion" });
-              if (!usuarioGuardado)
-                return res.status(500).send({ mensaje: "Error al agregar el Usuario" });
-
-              return res.status(200).send({ usuario: usuarioGuardado });
-            });
+                  return res.status(200).send({ usuario: usuarioGuardado });
+                });
+              }
+            );
+          } else {
+            return res.status(500).send({ mensaje: "Este usuario, ya  se encuentra utilizado" });
           }
-        );
+        });
       } else {
-        return res.status(500).send({ mensaje: "Este usuario, ya  se encuentra utilizado" });
+        return res.status(500).send({ mensaje: "Este nombre ya se encuentra utilizado" })
       }
-    });
+    })
   }
 }
 
@@ -157,16 +168,27 @@ function EditarUsuario(req, res) {
   }
 
   parametros.rol = undefined;
+  Usuario.find({ nombreEmpresa: parametros.nombreEmpresa }, (err, nombreEncontrado) => {
+    if (nombreEncontrado.length == 0) {
+      Usuario.find({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
+        if (usuarioEncontrado.length == 0) {
+          Usuario.findByIdAndUpdate(idEmpresa, parametros, { new: true },
+            (err, usuarioActualizado) => {
+              if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
 
-  Usuario.findByIdAndUpdate(idEmpresa, parametros, { new: true },
-    (err, usuarioActualizado) => {
-      if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+              if (!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al editar el Usuario' });
 
-      if (!usuarioActualizado) return res.status(500).send({ mensaje: 'Error al editar el Usuario' });
-
-      return res.status(200).send({ usuario: usuarioActualizado })
+              return res.status(200).send({ usuario: usuarioActualizado })
+            }
+          )
+        }else{
+          return res.status(500).send({mensaje:'Este usuario no esta disponibleS'})
+        }
+      })
+    } else {
+      return res.status(500).send({ mensaje: 'Este nombre no esta disponible' })
     }
-  )
+  })
 }
 
 function EliminarUsuario(req, res) {
@@ -216,25 +238,25 @@ function EliminarUsuario(req, res) {
 
 function encontrarEmpresas(req, res) {
 
-  if(req.user.rol == 'Admin'){
+  if (req.user.rol == 'Admin') {
     Usuario.find({ rol: "Empresa" }, (err, usuariosEncontrados) => {
       if (usuariosEncontrados.length == 0) return res.status(200).send({ mensaje: "no cuenta con empresas" })
-  
+
       return res.status(200).send({ empresas: usuariosEncontrados })
     })
-  }else{
-    return res.status(500).send({mensaje: 'No Esta autorizado para ver las empresas'})
+  } else {
+    return res.status(500).send({ mensaje: 'No Esta autorizado para ver las empresas' })
   }
 }
 
 function encontrarEmpresaId(req, res) {
   var idEmpresa = req.params.id;
-      Usuario.findById(idEmpresa, (err, empresaEncontrada) => {
-          if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
-          if (!empresaEncontrada) return res.status(500).send({ mensaje: "Error al obtener la empresa" });
+  Usuario.findById(idEmpresa, (err, empresaEncontrada) => {
+    if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
+    if (!empresaEncontrada) return res.status(500).send({ mensaje: "Error al obtener la empresa" });
 
-          return res.status(200).send({ empresa: empresaEncontrada });
-      })
+    return res.status(200).send({ empresa: empresaEncontrada });
+  })
 }
 
 module.exports = {
