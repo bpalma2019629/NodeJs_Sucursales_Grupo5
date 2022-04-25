@@ -115,7 +115,7 @@ function venta(req, res) {
             if (!productoEncontrado) return res.status(400).send({ mensaje: "Error al agregar el producto" });
             if (parametros.stock <= 0) return res.status(404).send({ mensaje: 'Ingrese un valor valido' });
             if (productoEncontrado.stock >= parametros.stock) {
-                ProductoS.findByIdAndUpdate(idProd, { cantidadVendida: parametros.stock }, { new: true }, (err, ventaActualizada) => {
+                ProductoS.findByIdAndUpdate(idProd, { $inc: { cantidadVendida: parametros.stock}}, { new: true }, (err, ventaActualizada) => {
                     if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
                     if (!ventaActualizada) return res.status(400).send({ mensaje: "Error al agregar el producto" });
                     ProductoS.findByIdAndUpdate(idProd, { $inc: { stock: parametros.stock * -1 } }, { new: true }, (err, ventaEfectuada) => {
