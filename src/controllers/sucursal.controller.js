@@ -117,7 +117,18 @@ function ObtenerSucursalId(req, res){
 
 function ObtenerSucursalNombre(req, res){
     var nombre = req.params.nombre;
-    var empresa = req.user.sub;
+    var empresa;
+
+    if(req.user.rol == 'Empresa'){
+        empresa = req.user.sub
+      }else if(req.user.rol == 'Admin'){
+    
+        if(req.params.idEmpresa==null){
+          return res.status(500).send({ mensaje: 'debe enviar el id de la empresa' });
+        }
+    
+        empresa = req.params.idEmpresa;
+      }
 
 
     Sucursales.find({idEmpresa: empresa, nombreSucursal:{ $regex: nombre, $options: 'i' } }, (err, sucursalEncontrada) => {
