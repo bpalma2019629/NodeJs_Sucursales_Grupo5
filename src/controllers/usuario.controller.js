@@ -168,10 +168,10 @@ function EditarUsuario(req, res) {
   }
 
   parametros.rol = undefined;
-  Usuario.find({ nombreEmpresa: parametros.nombreEmpresa }, (err, nombreEncontrado) => {
-    if (nombreEncontrado.length == 0) {
-      Usuario.find({ usuario: parametros.usuario }, (err, usuarioEncontrado) => {
-        if (usuarioEncontrado.length == 0) {
+  Usuario.findOne({ nombreEmpresa: parametros.nombreEmpresa}, (err, nombreEncontrado) => {
+    if (nombreEncontrado==null || nombreEncontrado._id == idEmpresa ) {
+      Usuario.findOne({ usuario: parametros.usuario}, (err, usuarioEncontrado) => {
+        if ( usuarioEncontrado==null || usuarioEncontrado._id == idEmpresa) {
           Usuario.findByIdAndUpdate(idEmpresa, parametros, { new: true },
             (err, usuarioActualizado) => {
               if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
@@ -182,7 +182,7 @@ function EditarUsuario(req, res) {
             }
           )
         }else{
-          return res.status(500).send({mensaje:'Este usuario no esta disponibleS'})
+          return res.status(500).send({mensaje:'Este usuario no esta disponible'})
         }
       })
     } else {
