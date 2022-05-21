@@ -44,25 +44,20 @@ function EditarProducto(req, res) {
     if (req.user.rol != 'Empresa')
         return res.status(500).send({ mensaje: 'Solo las empresas pueden acceder a esta función' });
 
-    Producto.find({ nombreProducto: parametros.nombreProducto }, (err, productoEncontrado) => {
-        if (productoEncontrado.length == 0) {
-
-            Producto.findOneAndUpdate({ _id: idProd, idEmpresa:req.user.sub }, parametros, { new: true }, (err, productoActualizado) => {
-                if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-                if (!productoActualizado) return res.status(500).send({ mensaje: 'Ocurrio un error o no tiene permitido modificar el producto de esta empresa' });
-
-                return res.status(200).send({ producto: productoActualizado })
-            })
-
-        } else {
-            parametros.nombreProducto=productoEncontrado.nombreProducto;
-            Producto.findOneAndUpdate({ _id: idProd, idEmpresa: req.user.sub }, parametros, { new: true }, (err, productoActualizado) => {
-                if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-                if (!productoActualizado) return res.status(500).send({ mensaje: 'Ocurrio un error o no tiene permitido modificar el producto de esta empresa' });
-
-                return res.status(200).send({ producto: productoActualizado })
-            })
-        }
+    Producto.findOne({ nombreProducto: parametros.nombreProducto }, (err, productoEncontrado) => {
+        Producto.findById(idProd, (err, infoProd) =>{
+            if (!productoEncontrado || infoProd.nombreProducto == parametros.nombreProducto) {
+                Producto.findOneAndUpdate({ _id: idProd, idEmpresa:req.user.sub }, parametros, { new: true }, (err, productoActualizado) => {
+                    if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+                    if (!productoActualizado) return res.status(500).send({ mensaje: 'Ocurrio un error o no tiene permitido modificar el producto de esta empresa' });
+    
+                    return res.status(200).send({ producto: productoActualizado })
+                })
+    
+            } else {
+                return res.status(500).send({ mensaje: 'Este producto ya existe' })
+            }
+        })
     })
 
 }
